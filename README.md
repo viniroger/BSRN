@@ -10,6 +10,7 @@ Os dados das estações PTR, BRB e SMS devem ser consultados dessa base formatad
 
 A [documentação do SONDA Translator](https://github.com/labren/sonda-translator/) está nesse link. Fluxograma de funcionamento do sdt:
 
+```
 ASCII (.dat) locais
         ↓
 scan_ftp.py  → cria json/arquivos_ftp.json
@@ -21,6 +22,7 @@ processaDado.py → gera sonda-formatados/
 gerar_base.py → cria .db + .parquet
         ↓
 (gerar_web.py opcional)
+```
 
 ### Execução local e alterações no código
 
@@ -39,7 +41,7 @@ pip install -r requirements.txt
 
 Depois, tiveram algumas diferenças de execução com relação à documentação original. Para funcionar parecido, tive que transformar os imports internos em imports relativos de pacotes (colocar um ponto na frente dos imports dos arquivos .py que tem na pasta, ex.: from .logger import setup_logger), alterando os seguintes arquivos:
 
-- __main__.py
+- `__main__.py`
 - prequalificaDado.py
 - processaDado.py
 - tratar_quarentena.py
@@ -74,10 +76,12 @@ python -m sdt -estacao sms -formatar -ftp_dir ~/dados/historico
 
 A seguinte estrutura de diretórios é formada (pasta "output"):
 
+```
 sonda-formatados/
    ├── Meteorologica/
    ├── Solarimetrica/
    └── Anemometrica/
+```
 
 3. Criar banco de dados
 
@@ -90,12 +94,14 @@ python -m sdt -tipo SD -gerar_base -ftp_dir ~/dados/historico
 
 Os seguintes arquivos são gerados (tem o Anemometrica também mas não precisa pro BSRN):
 
+```
 sonda-formatados/
    ├── dbs
         ├── Meteorologica.parquet
         └── Solarimetrica.parquet
    ├── Meteorologica.parquet
    └── Solarimetrica.parquet
+```
 
 Obs.: no computador do Helvécio (OU FTP? VERIFICAR), os arquivos a serem consultados ficam em "/restricted/dados/sonda/dados_formatados/[EST]/solarimetricos" onde EST = BRB, PTR ou SMS.
 
@@ -116,5 +122,5 @@ LISTA DE TAREFAS
 - O manual GCOS-174 explica o formato do arquivo.
 - O manual WMO-1274 explica detalhes sobre a rede BSRN.
 - O código fcheck.c serve para checar se o formato do arquivo está adequado.
-- O formato do station-to-archive também está explicado de maneira resumida neste [link](https://bsrn.awi.de/data/station-to-archive-file-format)
- - Arquivos no [Gdrive](https://drive.google.com/drive/folders/1txJNvXiqJJItdo5I4M-hYXSuo1cYBHj-?usp=drive_link)
+- O formato do station-to-archive também está explicado de maneira resumida neste [link](https://bsrn.awi.de/data/station-to-archive-file-format).
+ - Arquivos no [Gdrive](https://drive.google.com/drive/folders/1txJNvXiqJJItdo5I4M-hYXSuo1cYBHj-?usp=drive_link).
