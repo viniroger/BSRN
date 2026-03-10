@@ -1,8 +1,8 @@
 # Formatação BSRN
 
-Os dados coletados nas estações automáticas da rede SONDA são enviados via FTP ou coletados manualmente (via loggernet em PC de coleta ou via Anydesk), salvos no servidor FTP após rotinas de controle e gerados arquivos mensais meteorológicos, solarimétricos e anemométricos (conforme a estação). Depois, deve-se executar o SONDA Translator (sdt) para organizar os dados em uma base formatada.
+Os dados coletados nas estações automáticas da rede SONDA são salvos no servidor FTP após rotinas de controle e gerados arquivos mensais meteorológicos, solarimétricos e anemométricos, conforme a estação. Depois, deve-se executar o SONDA Translator (sdt) para organizar os dados em uma base formatada.
 
-Os dados das estações PTR, BRB e SMS devem ser consultados dessa base formatada e enviados para a BSRN no formato "station-to-archive". Esse procedimento é o objetivo desses scripts
+Após atualização da base usando o sdt, os dados das estações PTR, BRB e SMS devem ser consultados dessa base formatada e enviados para a [BSRN](https://www.monolitonimbus.com.br/bsrn) no formato "station-to-archive". Esse procedimento é o objetivo desses scripts.
 
 ## SONDA Translator
 
@@ -97,8 +97,8 @@ Os seguintes arquivos são gerados (tem o Anemometrica também mas não precisa 
 ```
 sonda-formatados/
    ├── dbs
-        ├── Meteorologica.parquet
-        └── Solarimetrica.parquet
+        ├── Meteorologica.db
+        └── Solarimetrica.db
    ├── Meteorologica.parquet
    └── Solarimetrica.parquet
 ```
