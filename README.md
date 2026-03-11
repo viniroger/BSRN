@@ -1,6 +1,6 @@
 # Formatação BSRN
 
-Os dados coletados nas estações automáticas da rede SONDA são salvos no servidor FTP após rotinas de controle e gerados arquivos mensais meteorológicos, solarimétricos e anemométricos, conforme a estação. Depois, deve-se executar o SONDA Translator (sdt) para organizar os dados em uma base formatada.
+Os dados coletados nas estações automáticas da rede SONDA são salvos (em horário UTC) no servidor FTP após rotinas de controle e gerados arquivos mensais meteorológicos, solarimétricos e anemométricos, conforme a estação. Depois, deve-se executar o SONDA Translator (sdt) para organizar os dados em uma base formatada.
 
 Após atualização da base usando o sdt, os dados das estações PTR, BRB e SMS devem ser consultados dessa base formatada e enviados para a [BSRN](https://www.monolitonimbus.com.br/bsrn) no formato "station-to-archive". Esse procedimento é o objetivo desses scripts.
 
@@ -56,6 +56,14 @@ Comparando com o original, em termos de execução, agora tem que usar "-m" ante
 
 ### Passo a passo (execução local)
 
+0. Ativar ambiente virtual e ir para diretório dos scripts
+
+```bash
+conda deactivate
+conda activate sdt
+cd ~/Documentos/labren/sonda-translator
+```
+
 1. Montar lista de arquivos
 
 Os nomes com paths dos arquivos .dat (ASCII), com os dados organizados como estação/ano, são salvos em formato JSON:
@@ -105,13 +113,32 @@ sonda-formatados/
 
 Obs.: no computador do Helvécio (OU FTP? VERIFICAR), os arquivos a serem consultados ficam em "/restricted/dados/sonda/dados_formatados/[EST]/solarimetricos" onde EST = BRB, PTR ou SMS.
 
-## Leitura sdt e geração de arquivos BSRN
+PROBLEMAS SDT NÃO RESOLVIDOS PARA RODAR LOCALMENTE
 
-(Fazer desenvolvimento e testes com PTR 01 2019)
+- Arquivos sem header (ASCII bruto como BRB e PTR antigo) são desconsiderados (BRB) ou dão erro (PTR). Esses arquivos originais (como PTR_2018_001_a_343.dat e PTR17_255a272.dat) constam da lista JSON do Helvécio, ou seja, dados devem estar no parquet que ele gerou.
+
+(linha 109) data.columns = header_row -> mesmo quando recebe dados em vez de nomes de colunas (ex: BRB, que não tem header), ele os considera como nomes de colunas (mas não são strings, são números), e aí trava a linha 123 data.columns = data.columns.str.strip('"'). Deveria buscar header em arquivo (no caso de BRB, em json/cabecalho_sensor.json). Nesses casos, manual_header está como None, daí não entra pra chamar cabecalhoManual(). Ponto de onde sai do script: main_header = headers[file_type] pq readers não tem uma chave escrita INDEFINIDO; mas todos os arquivos brb são "tipo": "INDEFINIDO" (inclusive no json do Helvécio)
+
+Obs.: Arquivos de exemplo (enviados pelo André) são de períodos em que o formato dos dados SONDA eram ASCII bruto, então acho que o q ele tinha só lia desse tipo e não os TOA5 (isso explica pq todos os dados tinham frequência de 1 min mas agora MD tem frequência de 10 min)
+
+## Script principal de geração de arquivos BSRN
+
+O script `create_bsrn.py` processa dados **solarimétricos (SD)** e **meteorológicos (MD)** armazenados em arquivos **Parquet**, gerando arquivos mensais no formato final utilizado pelo sistema.
+
+Para cada **estação**, **ano** e **mês**, o fluxo executado é:
+
+1. **Leitura dos dados** a partir dos bancos Parquet usando **DuckDB** (`get_SD` e `get_MD`).
+2. **Interpolação dos dados meteorológicos** de 10 min para 1 min (`interpolar_md`).
+3. **Junção das bases SD e MD** pelo timestamp (`merge`).
+4. **Ajuste dos minutos finais do dia** para variáveis MD (`ajustar_final_md`).
+5. **Garantia de grade temporal completa** de 1 min para todo o mês (`garantir_grade_completa`).
+6. **Substituição de valores ausentes** pelos códigos padrão do formato final (`preencher_missing`).
+7. **Geração do arquivo mensal** para cada estação (`gerar_arquivo`).
+
+O resultado é um conjunto de arquivos mensais contendo séries temporais com **resolução de 1 minuto**, estrutura temporal contínua (horário UTC) e códigos padronizados para dados faltantes.
 
 LISTA DE TAREFAS
 
-- Gerar script que lê os campos da entrada e salva com o formato da saída (linha 2 do cabeçalho tem que mudar pq tem mês e ano do próprio arquivo; SDT deixa em HL ou UTC? Na BSRN acho que é UTC)
 - Compilar arquivo verificador em C no linux e checar arquivo gerado
 - Testar para outros meses e para todas as estações
 - Fechar scripts e documentação
