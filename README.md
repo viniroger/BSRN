@@ -123,24 +123,24 @@ Obs.: Arquivos de exemplo (enviados pelo André) são de períodos em que o form
 
 ## Script principal de geração de arquivos BSRN
 
-O script `create_bsrn.py` processa dados **solarimétricos (SD)** e **meteorológicos (MD)** armazenados em arquivos **Parquet**, gerando arquivos mensais no formato final utilizado pelo sistema.
+O script `create_bsrn.py` processa dados solarimétricos (SD) e meteorológicos (MD) armazenados em arquivos Parquet, gerando arquivos mensais no formato final utilizado pelo sistema.
 
-Para cada **estação**, **ano** e **mês**, o fluxo executado é:
+Para cada estação, ano e mês, o fluxo executado é:
 
-1. **Leitura dos dados** a partir dos bancos Parquet usando **DuckDB** (`get_SD` e `get_MD`).
-2. **Interpolação dos dados meteorológicos** de 10 min para 1 min (`interpolar_md`).
-3. **Junção das bases SD e MD** pelo timestamp (`merge`).
-4. **Ajuste dos minutos finais do dia** para variáveis MD (`ajustar_final_md`).
-5. **Garantia de grade temporal completa** de 1 min para todo o mês (`garantir_grade_completa`).
-6. **Substituição de valores ausentes** pelos códigos padrão do formato final (`preencher_missing`).
-7. **Geração do arquivo mensal** para cada estação (`gerar_arquivo`).
+1. Leitura dos dados a partir dos bancos Parquet usando DuckDB (`get_SD` e `get_MD`).
+2. Interpolação dos dados meteorológicos de 10 min para 1 min (`interpolar_md`).
+3. Junção das bases SD e MD pelo timestamp (`merge`).
+4. Ajuste dos minutos finais do dia para variáveis MD (`ajustar_final_md`).
+5. Garantia de grade temporal completa de 1 min para todo o mês (`garantir_grade_completa`).
+6. Substituição de valores ausentes pelos códigos padrão do formato final (`preencher_missing`).
+7. Geração do arquivo mensal para cada estação (`gerar_arquivo`).
 
-O resultado é um conjunto de arquivos mensais contendo séries temporais com **resolução de 1 minuto**, estrutura temporal contínua (horário UTC) e códigos padronizados para dados faltantes.
+O resultado é um conjunto de arquivos mensais contendo séries temporais com resolução de 1 minuto, estrutura temporal contínua (horário UTC) e códigos padronizados para dados faltantes.
 
 LISTA DE TAREFAS
 
-- Compilar arquivo verificador em C no linux e checar arquivo gerado
-- Testar para outros meses e para todas as estações
+- Compilar arquivo verificador em C no linux e checar arquivo gerado (se funcionar bem, documentar e disponilizar o fonte C na pasta helpers)
+- Baixar Parquets do Helvécio e gerar outros meses e para todas as estações
 - Fechar scripts e documentação
 - Ver como atualizar base de dados do SONDA translator para poder gerar arquivos todo mês
 
