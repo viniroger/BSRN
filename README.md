@@ -139,8 +139,8 @@ O resultado é um conjunto de arquivos mensais contendo séries temporais com re
 
 LISTA DE TAREFAS
 
-- Compilar arquivo verificador em C no linux e checar arquivo gerado (se funcionar bem, documentar e disponilizar o fonte C na pasta helpers)
 - Baixar Parquets do Helvécio e gerar outros meses e para todas as estações
+- Compilar arquivo verificador em C no linux e checar arquivo gerado (se funcionar bem, documentar e disponilizar o fonte C na pasta helpers)
 - Fechar scripts e documentação
 - Ver como atualizar base de dados do SONDA translator para poder gerar arquivos todo mês
 
