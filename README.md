@@ -2,7 +2,7 @@
 
 Os dados coletados nas estações automáticas da rede SONDA são salvos (em horário UTC) no servidor FTP, após verificação em rotinas de controle, e são gerados arquivos mensais meteorológicos, solarimétricos e anemométricos, conforme a estação. Depois, deve-se executar o [SONDA Translator](https://github.com/labren/sonda-translator/) (sdt) para organizar os dados em arquivos formatados, particularmente para as estações PTR, BRB e SMS.
 
-O objetivo dos scripts desse repositório está em consultar os arquivos formatados apos tratamento com o sdt e gerar arquivos mensais no formato "station-to-archive" para envio à BSRN. Mais informações no manual [GCOS-174](https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf),  manual [WMO-1274](https://epic.awi.de/id/eprint/45991/1/McArthur.pdf) e documentação da BSRN sobre o formato [station-to-archive](https://bsrn.awi.de/data/station-to-archive-file-format).
+O objetivo dos scripts desse repositório está em consultar os arquivos formatados após tratamento com o sdt e gerar arquivos mensais no formato "station-to-archive" para envio à BSRN. Mais informações nos manuais [GCOS-174](https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf) e [WMO-1274](https://epic.awi.de/id/eprint/45991/1/McArthur.pdf), asism como na documentação da BSRN sobre o formato [station-to-archive](https://bsrn.awi.de/data/station-to-archive-file-format).
 
 # Instalação
 
@@ -12,7 +12,7 @@ Com seu ambiente configurado, siga para seu diretório de trabalho em seu termin
 
 `git clone https://github.com/viniroger/bsrn`
 
-Entre no diretório gerado e edite o script principal (create_bsrn.py) para alterar o caminho de onde estão os dados a serem utilizados (formatados) - variável "path", linha 7.
+Entre no diretório gerado e edite o script principal (create_bsrn.py) para alterar o caminho local de onde estão os dados a serem utilizados (formatados) - variável "path", linha 7. Esse diretório deve ser sempre atualizado com novos dados para gerar novos arquivos, mantendo a estrutura de diretórios originalmente gerada pelo sdt: sonda/formatados/EST/TIPO/ANO/EST_ANO_MES_SIGLATIPO_formatado.csv
 
 # Execução
 
@@ -24,7 +24,7 @@ O que esse script faz:
 
 1. método `get_csv` - lê os arquivos formatados solarimétrico (SD) e meteorológico (MD)
 2. método `merge_sd_md` - forma um dataframe com intervalo de 1 minuto com todos os dados disponíveis
-3. método `fill_missing` - preenche vampos sem dados com os códigos definidos pela documentação BSRN
+3. método `fill_missing` - preenche campos sem dados com os códigos definidos pela documentação BSRN
 4. método `gerar_arquivo` - grava arquivo no formato BSRN no subdiretório "out"
 
 Nesse exemplo, o arquivo gerado deve ser "ptr0420.dat".
@@ -46,7 +46,7 @@ A saída deve conter os problemas a serem resolvidos na geração do arquivo ou 
 
 # SONDA Translator
 
-A [documentação do SONDA Translator](https://github.com/labren/sonda-translator/) está nesse link. A documentação a seguir apresenta como rodar localmente a partir da clonagem dos arquivos do Github.
+O [SONDA Translator](https://github.com/labren/sonda-translator/) está disponível nesse link. A documentação a seguir apresenta como rodar localmente a partir da clonagem dos arquivos do Github.
 
 ## Fluxograma
 
@@ -151,6 +151,8 @@ sonda-formatados/
    └── Solarimetrica.parquet
 ```
 
-Obs.: no computador original, os arquivos a serem consultados ficam em "/restricted/dados/sonda/dados_formatados/[EST]/solarimetricos" onde EST = BRB, PTR ou SMS.
+Obs. 1: no computador original, os arquivos a serem consultados ficam em "/restricted/dados/sonda/dados_formatados/[EST]/solarimetricos" onde EST = BRB, PTR ou SMS.
 
 Obs. 2: Na versão original, arquivos sem header (ASCII bruto como BRB e PTR antigo) são desconsiderados (BRB) ou dão erro (PTR). Esses arquivos originais (como PTR_2018_001_a_343.dat e PTR17_255a272.dat) constam da lista JSON original.
+
+Obs. 3: Não existe alteração de valores, filtragens ou coisas do tipo para gerar o db e o parquet, só mudança de formato.
