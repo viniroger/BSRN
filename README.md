@@ -1,14 +1,54 @@
 # Formatação BSRN
 
-Os dados coletados nas estações automáticas da rede SONDA são salvos (em horário UTC) no servidor FTP após rotinas de controle e gerados arquivos mensais meteorológicos, solarimétricos e anemométricos, conforme a estação. Depois, deve-se executar o SONDA Translator (sdt) para organizar os dados em uma base formatada.
+Os dados coletados nas estações automáticas da rede SONDA são salvos (em horário UTC) no servidor FTP, após verificação em rotinas de controle, e são gerados arquivos mensais meteorológicos, solarimétricos e anemométricos, conforme a estação. Depois, deve-se executar o [SONDA Translator](https://github.com/labren/sonda-translator/) (sdt) para organizar os dados em arquivos formatados, particularmente para as estações PTR, BRB e SMS.
 
-Após atualização da base usando o sdt, os dados das estações PTR, BRB e SMS devem ser consultados dessa base formatada e enviados para a [BSRN](https://www.monolitonimbus.com.br/bsrn) no formato "station-to-archive". Esse procedimento é o objetivo desses scripts.
+O objetivo dos scripts desse repositório está em consultar os arquivos formatados apos tratamento com o sdt e gerar arquivos mensais no formato "station-to-archive" para envio à BSRN. Mais informações no manual [GCOS-174](https://bsrn.awi.de/fileadmin/user_upload/bsrn.awi.de/Publications/gcos-174.pdf),  manual [WMO-1274](https://epic.awi.de/id/eprint/45991/1/McArthur.pdf) e documentação da BSRN sobre o formato [station-to-archive](https://bsrn.awi.de/data/station-to-archive-file-format).
 
-## SONDA Translator
+# Instalação
 
-### Sobre
+Além das bibliotecas padrão do python, é necessário também a biblioteca do pandas. Nesse desenvolvimento, foram usados Python 3.13.11 e pandas 3.0.0, mas se não for uma instalação muito antiga, bem provável funcionar com outras versões.
 
-A [documentação do SONDA Translator](https://github.com/labren/sonda-translator/) está nesse link. Fluxograma de funcionamento do sdt:
+Com seu ambiente configurado, siga para seu diretório de trabalho em seu terminal e clone esse repositório através do seguinte comando:
+
+`git clone https://github.com/viniroger/bsrn`
+
+Entre no diretório gerado e edite o script principal (create_bsrn.py) para alterar o caminho de onde estão os dados a serem utilizados (formatados) - variável "path", linha 7.
+
+# Execução
+
+Dentro do diretório, execute o script principal e os respectivos argumentos de entrada: sigla da estação (3 letras maiúsculas), ano (4 dígitos) e mês (2 dígitos) a serem trabalhados. Exemplo:
+
+`python create_bsrn.py PTR 2020 04`
+
+O que esse script faz:
+
+1. método `get_csv` - lê os arquivos formatados solarimétrico (SD) e meteorológico (MD)
+2. método `merge_sd_md` - forma um dataframe com intervalo de 1 minuto com todos os dados disponíveis
+3. método `fill_missing` - preenche vampos sem dados com os códigos definidos pela documentação BSRN
+4. método `gerar_arquivo` - grava arquivo no formato BSRN no subdiretório "out"
+
+Nesse exemplo, o arquivo gerado deve ser "ptr0420.dat".
+
+# Checagem
+
+Depois de gerado, o arquivo deverá passar por checagem através do script em linguagem C `f_check`, disponível no site da BSRN nesse [link](https://bsrn.awi.de/software/). No Linux, deve-se instalar os pacotes necessários e compilar o código para gerar o arquivo executável através dos seguitnes comandos:
+
+```
+sudo apt install build-essential
+gcc f_check_V3_4.c -o f_check_V3_4.exe
+```
+
+Sua execução, ainda considerando o arquivo de exemplo gerado, será:
+
+`./f_check_V3_3.exe out/ptr0420.dat`
+
+A saída deve conter os problemas a serem resolvidos na geração do arquivo ou então um diagnóstico de que o tamanho das linhas (line length), caracteres irregulares (illegal characters) e formato da linha (line format) estão OK.
+
+# SONDA Translator
+
+A [documentação do SONDA Translator](https://github.com/labren/sonda-translator/) está nesse link. A documentação a seguir apresenta como rodar localmente a partir da clonagem dos arquivos do Github.
+
+## Fluxograma
 
 ```
 ASCII (.dat) locais
@@ -21,10 +61,10 @@ processaDado.py → gera sonda-formatados/
         ↓
 gerar_base.py → cria .db + .parquet
         ↓
-(gerar_web.py opcional)
+gerar_web.py
 ```
 
-### Execução local e alterações no código
+## Instalação
 
 Para execução local, deve-se clonar o código do github, criar um ambiente virtual e instalar as dependências:
 
@@ -39,7 +79,7 @@ conda activate sdt
 pip install -r requirements.txt
 ```
 
-Depois, tiveram algumas diferenças de execução com relação à documentação original. Para funcionar parecido, tive que transformar os imports internos em imports relativos de pacotes (colocar um ponto na frente dos imports dos arquivos .py que tem na pasta, ex.: from .logger import setup_logger), alterando os seguintes arquivos:
+Para funcionar parecido com a documentação original, devem ser alterados os imports internos para imports relativos de pacotes (colocar um ponto na frente dos imports dos arquivos .py que tem na pasta, ex.: from .logger import setup_logger), alterando os seguintes arquivos:
 
 - `__main__.py`
 - prequalificaDado.py
@@ -54,9 +94,9 @@ Outras alterações no código para gerar listas de arquivos com todos os campos
 
 Comparando com o original, em termos de execução, agora tem que usar "-m" antes de sdt e especificar o caminho dos dados através do parâmetro "-ftp_dir". O passo a passo a seguir já inclui essas diferenças.
 
-### Passo a passo (execução local)
+## Execução local
 
-0. Ativar ambiente virtual e ir para diretório dos scripts
+1. Ativar ambiente virtual e ir para diretório dos scripts
 
 ```bash
 conda deactivate
@@ -64,7 +104,7 @@ conda activate sdt
 cd ~/Documentos/labren/sonda-translator
 ```
 
-1. Montar lista de arquivos
+2. Montar lista de arquivos
 
 Os nomes com paths dos arquivos .dat (ASCII), com os dados organizados como estação/ano, são salvos em formato JSON:
 
@@ -72,7 +112,7 @@ Os nomes com paths dos arquivos .dat (ASCII), com os dados organizados como esta
 
 O script percorre recursivamente o diretório -ftp_dir, identifica arquivos .dat, extrai metadados (estação, tipo, ano, caminho completo) e gera arquivo índice: sdt/json/arquivos_ftp.json. Se não rodar isso, o __main__.py abre o arquivo já gerado anteriormente.
 
-2. Gerar sonda-formatados
+3. Gerar sonda-formatados
 
 Script processaDado.py (método processarArquivo() chamado indiretamente via __main__.py) lê o arquivo ASCII, identifica cabeçalho, padroniza nomes de colunas, converte dados para formato tabular, aplica pré-qualificação (prequalificarDado) e separa dados válidos e dados inválidos:
 
@@ -91,7 +131,7 @@ sonda-formatados/
    └── Anemometrica/
 ```
 
-3. Criar banco de dados
+4. (extra) Criar banco de dados
 
 Script gerar_base.py (chamado via opção no __main__.py por parâmetro --gerar_base) percorre sonda-formatados, agrupa dados por tipo, cria banco DuckDB (sonda-banco-dados), cria tabela correspondente, insere dados e exporta também para Parquet.
 
@@ -111,43 +151,6 @@ sonda-formatados/
    └── Solarimetrica.parquet
 ```
 
-Obs.: no computador do Helvécio (OU FTP? VERIFICAR), os arquivos a serem consultados ficam em "/restricted/dados/sonda/dados_formatados/[EST]/solarimetricos" onde EST = BRB, PTR ou SMS.
+Obs.: no computador original, os arquivos a serem consultados ficam em "/restricted/dados/sonda/dados_formatados/[EST]/solarimetricos" onde EST = BRB, PTR ou SMS.
 
-PROBLEMAS SDT NÃO RESOLVIDOS PARA RODAR LOCALMENTE
-
-- Arquivos sem header (ASCII bruto como BRB e PTR antigo) são desconsiderados (BRB) ou dão erro (PTR). Esses arquivos originais (como PTR_2018_001_a_343.dat e PTR17_255a272.dat) constam da lista JSON do Helvécio, ou seja, dados devem estar no parquet que ele gerou.
-
-(linha 109) data.columns = header_row -> mesmo quando recebe dados em vez de nomes de colunas (ex: BRB, que não tem header), ele os considera como nomes de colunas (mas não são strings, são números), e aí trava a linha 123 data.columns = data.columns.str.strip('"'). Deveria buscar header em arquivo (no caso de BRB, em json/cabecalho_sensor.json). Nesses casos, manual_header está como None, daí não entra pra chamar cabecalhoManual(). Ponto de onde sai do script: main_header = headers[file_type] pq readers não tem uma chave escrita INDEFINIDO; mas todos os arquivos brb são "tipo": "INDEFINIDO" (inclusive no json do Helvécio)
-
-Obs.: Arquivos de exemplo (enviados pelo André) são de períodos em que o formato dos dados SONDA eram ASCII bruto, então acho que o q ele tinha só lia desse tipo e não os TOA5 (isso explica pq todos os dados tinham frequência de 1 min mas agora MD tem frequência de 10 min)
-
-## Script principal de geração de arquivos BSRN
-
-O script `create_bsrn.py` processa dados solarimétricos (SD) e meteorológicos (MD) armazenados em arquivos Parquet, gerando arquivos mensais no formato final utilizado pelo sistema.
-
-Para cada estação, ano e mês, o fluxo executado é:
-
-1. Leitura dos dados a partir dos bancos Parquet usando DuckDB (`get_SD` e `get_MD`).
-2. Interpolação dos dados meteorológicos de 10 min para 1 min (`interpolar_md`).
-3. Junção das bases SD e MD pelo timestamp (`merge`).
-4. Ajuste dos minutos finais do dia para variáveis MD (`ajustar_final_md`).
-5. Garantia de grade temporal completa de 1 min para todo o mês (`garantir_grade_completa`).
-6. Substituição de valores ausentes pelos códigos padrão do formato final (`preencher_missing`).
-7. Geração do arquivo mensal para cada estação (`gerar_arquivo`).
-
-O resultado é um conjunto de arquivos mensais contendo séries temporais com resolução de 1 minuto, estrutura temporal contínua (horário UTC) e códigos padronizados para dados faltantes.
-
-LISTA DE TAREFAS
-
-- Baixar Parquets do Helvécio e gerar outros meses e para todas as estações
-- Compilar arquivo verificador em C no linux e checar arquivo gerado (se funcionar bem, documentar e disponilizar o fonte C na pasta helpers)
-- Fechar scripts e documentação
-- Ver como atualizar base de dados do SONDA translator para poder gerar arquivos todo mês
-
-## Mais informações
-
-- O manual GCOS-174 explica o formato do arquivo.
-- O manual WMO-1274 explica detalhes sobre a rede BSRN.
-- O código fcheck.c serve para checar se o formato do arquivo está adequado.
-- O formato do station-to-archive também está explicado de maneira resumida neste [link](https://bsrn.awi.de/data/station-to-archive-file-format).
- - Arquivos no [Gdrive](https://drive.google.com/drive/folders/1txJNvXiqJJItdo5I4M-hYXSuo1cYBHj-?usp=drive_link).
+Obs. 2: Na versão original, arquivos sem header (ASCII bruto como BRB e PTR antigo) são desconsiderados (BRB) ou dão erro (PTR). Esses arquivos originais (como PTR_2018_001_a_343.dat e PTR17_255a272.dat) constam da lista JSON original.

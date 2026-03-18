@@ -3,12 +3,12 @@
 
 from helpers.bsrn import *
 
-# Caminho absoluto - alterar para o seu caso
-path = "/home/vinicius/Documentos/labren/sonda-translator/output/sonda-formatados/"
+# Caminho absoluto de onde estão os dados a serem utilizados (formatados)
+path = Path("/home/vinicius/Documentos/labren/sonda-translator/output/sonda-formatados/")
 
 # Receber estação, ano e mês como parâmetros
-est, ano, mes = ler_argumentos()
-print(f"ESTAÇÃO {est}  |  ANO {ano}  |  MES {mes:02d}")
+est, ano, mes = read_args()
+print(f"Gerando arquivo para {est} {ano}-{mes}...")
 
 # Nomes dos arquivos a serem usados
 arquivo_solar = f"{path}/{est}/Solarimetricos/{ano}/{est}_{ano}_{mes:02d}_SD_formatado.csv"
@@ -19,8 +19,8 @@ SD = get_csv(arquivo_solar, est)
 MD = get_csv(arquivo_meteo, est)
 
 # Juntar dataframes MD e SD
-df = juntar_sd_md(SD, MD, est, ano, mes)
+df = merge_sd_md(SD, MD, est, ano, mes)
 # Ajustes
-df = preencher_missing(df)
+df = fill_missing(df)
 # Gerar arquivo
-gerar_arquivo(df, est, ano, mes)
+create_file(df, est, ano, mes)
