@@ -25,9 +25,11 @@ O que esse script faz:
 1. método `get_csv` - lê os arquivos formatados solarimétrico (SD) e meteorológico (MD)
 2. método `merge_sd_md` - forma um dataframe com intervalo de 1 minuto com todos os dados disponíveis
 3. método `fill_missing` - preenche campos sem dados com os códigos definidos pela documentação BSRN
-4. método `gerar_arquivo` - grava arquivo no formato BSRN no subdiretório "out"
+4. método `create_file` - grava arquivo no formato BSRN no subdiretório "out"
 
 Nesse exemplo, o arquivo gerado deve ser "ptr0420.dat".
+
+Os cabeçalhos/headers das estações estão no direório "helpers", junto o o arquivo "bsrn.py" de funções chamadas no script principal. Esses arquivos podem ser editados diretamente no caso de mudança de suas informações, para gerar novos arquivos de dados.
 
 # Checagem
 
@@ -42,7 +44,9 @@ Sua execução, ainda considerando o arquivo de exemplo gerado, será:
 
 `./f_check_V3_3.exe out/ptr0420.dat`
 
-A saída deve conter os problemas a serem resolvidos na geração do arquivo ou então um diagnóstico de que o tamanho das linhas (line length), caracteres irregulares (illegal characters) e formato da linha (line format) estão OK.
+A saída deve conter os problemas a serem resolvidos na geração do arquivo ou então um diagnóstico de que o tamanho das linhas ("line length"), caracteres irregulares ("illegal characters") e formato da linha ("line format") estão OK.
+
+Por fim, deve-se compactar no formato gzip (gzip -c ptr0420.dat > ptr0420.dat.gz) e envio para o FTP da BSRN.
 
 # SONDA Translator
 
