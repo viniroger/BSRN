@@ -12,7 +12,7 @@ Com seu ambiente configurado, siga para seu diretório de trabalho em seu termin
 
 `git clone https://github.com/viniroger/bsrn`
 
-Entre no diretório gerado e edite o script principal (create_bsrn.py) para alterar o caminho local de onde estão os dados a serem utilizados (formatados) - variável "path", linha 7. Esse diretório deve ser sempre atualizado com novos dados para gerar novos arquivos, mantendo a estrutura de diretórios originalmente gerada pelo sdt: sonda/formatados/EST/TIPO/ANO/EST_ANO_MES_SIGLATIPO_formatado.csv
+Entre no diretório gerado e edite o script principal (create_bsrn.py) para alterar o caminho local de onde estão os dados a serem utilizados (formatados) - variável "path", linha 7. Esse diretório deve ser sempre atualizado com novos dados para gerar novos arquivos, mantendo a estrutura de diretórios originalmente gerada pelo sdt. Os arquivos estão no servidor FTP: /mnt/ftp/restricted/dados/sonda/dados_formatados/EST/TIPO/ANO/EST_ANO_MES_SIGLATIPO_formatado.csv
 
 # Execução
 
