@@ -83,20 +83,65 @@ conda activate sdt
 pip install -r requirements.txt
 ```
 
-Para funcionar parecido com a documentação original, devem ser alterados os imports internos para imports relativos de pacotes (colocar um ponto na frente dos imports dos arquivos .py que tem na pasta, ex.: from .logger import setup_logger), alterando os seguintes arquivos:
+Para funcionar localmente, como não tinha o termo "coleta" no path dos arquivos de origem - mas que não é necessária caso tenha essa palavra, que é o caso do script rodando no servidor FTP. Assim, foi criada uma função para ser usada dentro de "processar_arquivo", na parte "Extrair estação (diretório após 'coleta')", para substituir:
 
-- `__main__.py`
-- prequalificaDado.py
-- processaDado.py
-- tratar_quarentena.py
+```python
+try:
+    indice_coleta = partes_caminho.index('coleta')
+    if indice_coleta + 1 < len(partes_caminho):
+        estacao = partes_caminho[indice_coleta + 1]
+    else:
+        estacao = "desconhecido"
+except ValueError:
+    estacao = "desconhecido"
+```
 
-Outras alterações no código para gerar listas de arquivos com todos os campos preenchidos adequadamente:
+Por:
 
-- caminho absoluto/relativo para os arquivos .py quando importados
-- (scan_ftp) antes: '_AMB_' e '_RAD_', agora tirei último underline
-- (scan_ftp) nova função para extrair estação
+```python
+estacao = extrair_estacao(caminho_completo)
+```
 
-Comparando com o original, em termos de execução, agora tem que usar "-m" antes de sdt e especificar o caminho dos dados através do parâmetro "-ftp_dir". O passo a passo a seguir já inclui essas diferenças.
+A função é essa:
+
+```python
+def extrair_estacao(caminho_completo):
+    PASTAS_VALIDAS = {"coleta", "historico", "coleta_manual", "garimpo"}
+    PADRAO_ESTACAO = re.compile(r"^[A-Za-z]{3}$")
+    partes = os.path.normpath(caminho_completo).split(os.sep)
+
+    for i, parte in enumerate(partes):
+        if parte.lower() in PASTAS_VALIDAS:
+            
+            # verificar se existe diretório depois
+            if i + 1 >= len(partes):
+                break
+            
+            estacao = partes[i + 1]
+
+            if PADRAO_ESTACAO.match(estacao):
+                return estacao.lower()
+
+            else:
+                print(
+                    f"ERRO: estrutura de diretório inválida.\n"
+                    f"Caminho encontrado:\n{caminho_completo}\n\n"
+                    f"Estrutura esperada:\n"
+                    f".../(coleta|historico|coleta_manual|garimpo)/ESTACAO/...\n"
+                    f"onde ESTACAO deve ter exatamente 3 letras (ex: cts, spk, mna)."
+                )
+                sys.exit(1)
+
+    print(
+        f"ERRO: não foi possível identificar a estação no caminho:\n"
+        f"{caminho_completo}\n\n"
+        f"Estrutura esperada:\n"
+        f".../(coleta|historico|coleta_manual|garimpo)/ESTACAO/..."
+    )
+    sys.exit(1)
+```
+
+Além disso, ainda em scan_ftp, os termos '_AMB_' e '_RAD_' (com underline antes e depois) foram substituídos para ter somente o primeiro underline, já que alguns arquivos não tinham esse padrão.
 
 ## Execução local
 
