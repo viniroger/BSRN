@@ -141,7 +141,7 @@ def extrair_estacao(caminho_completo):
     sys.exit(1)
 ```
 
-Além disso, ainda em scan_ftp, os termos '_AMB_' e '_RAD_' (com underline antes e depois) foram substituídos para ter somente o primeiro underline, já que alguns arquivos não tinham esse padrão.
+Além disso, ainda em scan_ftp, os termos '_AMB_' e '_RAD_' (com underline antes e depois) foram substituídos para ter somente o primeiro underline, já que alguns arquivos não tinham esse padrão. Isso fez com que arquivos assim que estavam com "tipo": "INDEFINIDO" ficassem com o tipo definido (MD ou SD).
 
 ## Execução local
 
